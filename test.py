@@ -1,16 +1,13 @@
 mode_indicator = '0100'
 char_count_indicator = '' #debe ser de 8 bits
 
-unencoded_text = '' #ingresado por el usuario
+def hello(message):
+    databits = ''
+    for ch in message:
+        ch_byte = bin(ord(ch))[2:]
+        while len(ch_byte) < 8:
+            ch_byte = '0' + ch_byte
+        databits += ch_byte
+    print(databits)
 
-def encode_text_bin(text: str):
-    text_list = list(text)
-    print(text_list)
-
-    hex_list = []
-    for let in text_list:
-        hex_list.append(let.encode("utf-8").hex())
-
-    print(hex_list)
-
-encode_text_bin('hhg')
+hello('HHH')
