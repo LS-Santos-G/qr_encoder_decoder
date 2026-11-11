@@ -1,0 +1,7 @@
+WINDOW_TITLE: str = "Qr"
+RESOLUTION: str = "1920x1080"
+IS_RESIZABLE: bool = False
+BACKGROUND_COLOR: str = "#121212"
+
+SQUARE_GAP: int = 12
+MARGIN: int = 30

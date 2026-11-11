@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" project-jdk-name="~/Desktop/SEMESTRE 5/teoria de codigos/QR_ENCODER_DECODER/.venv" project-jdk-type="Python SDK" />
+  <component name="Black">
+    <option name="sdkName" value="Python 3.12 (qr_encoder_decoder)" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (qr_encoder_decoder)" project-jdk-type="Python SDK" />
 </project>
