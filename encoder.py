@@ -1,15 +1,7 @@
-from enum import Enum
+from reedsolo import RSCodec
 
-#nivel de correccion
-class ErrorCorrection(Enum):
-    LOW = 'L'
-    MID = 'M'
-    QTR = 'Q'
-    HIG = 'H'
 
-class Encoder:
-    #caracteristica universal de cada encoder
-    qr_specs = {
+qr_specs = {
     'L': {
         'ec_per_block': 24,
         'groups': [
@@ -38,11 +30,13 @@ class Encoder:
         'max_num_bits': 8*86
     }
 }
+class Encoder:
     def __init__(self, message: str, error_correction: str):
         #mensaje
         self.message = message
         #correcion seleccionada
-        self.error_correction = error_correction
+        self.error_correction = qr_specs[error_correction]
+        self.encoded_message = ''
 
     #largo del texto como numero binario de 8 bits
     def encode_string_text(self):
@@ -51,7 +45,7 @@ class Encoder:
         # len del mensaje en binario, 8 bits
         char_count_indicator = f"{len(self.message):08b}"
         # numero de bits maximo, depende del tipo de correcion escogida
-        max_num_bits = Encoder.qr_specs[self.error_correction]['max_num_bits']
+        max_num_bits = self.error_correction['max_num_bits']
         #mensaje en binario, cada char de 8 bits
         messsage_binary = "".join([f"{ord(char):08b}" for char in self.message])
 
@@ -86,4 +80,53 @@ class Encoder:
 
             encoded_message += padding
 
-        return encoded_message
+        self.encoded_message = encoded_message
+        return 1
+
+    #separa el mensaje en bloques segun la version
+    def separate_blocks(self, message_bytes: bytes) -> bytes:
+        ec_per_block = self.error_correction['ec_per_block']
+        message_bytes = bytes(self.encoded_message, 'utf-8')
+        all_blocks = []
+        current_index = 0
+
+        for group in self.error_correction['groups']:
+            num_blocks = group['num_blocks']  # num bloques por grupo
+            data_per_block = group['data_per_block']  # num parabras por bloque
+            for _ in range(num_blocks):
+                block_data = message_bytes[current_index: current_index + data_per_block]
+                if len(block_data) < data_per_block:
+                    raise ValueError("EL MENSAJE ES MUY CORTO PARA ESTE TIPO DE QR")
+                all_blocks.append(block_data)
+                current_index += data_per_block
+
+        return all_blocks
+
+    def ger_ec_codewords(self, encoded_message):
+
+            all_blocks = self.separate_blocks(encoded_message)
+            num_blocks = len(all_blocks)
+            ec_per_block = self.error_correction['ec_per_block'] #num palabras correccion
+            #guarda las palabras de corrección de todos los bloques
+            all_ec_codewords = []
+
+            for index in range(num_blocks):
+                #el bloque actual
+                target_block = all_blocks[index]
+
+                # reed solomon del bloque
+                rs = RSCodec(ec_per_block)
+
+                # retorna las ec del bloque
+                encoded = rs.encode(target_block)
+                ec_codewords = encoded[len(target_block):]
+
+                all_ec_codewords.append(ec_codewords)
+
+            return all_ec_codewords
+
+    def interweave_words(self):
+        all_blocks = self.separate_blocks(self.encoded_message)
+        interweaved_words = ''
+
+
