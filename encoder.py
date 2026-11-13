@@ -1,26 +1,28 @@
+import numpy as np
+from matplotlib import pyplot as plt
 from reedsolo import RSCodec
 
 #qr ver 2
 qr_specs = {
     'L': {
-        'ec_per_block': 10,
-        'char_capacity':32,
-        'max_num_bits': 8*34
+        'ec_per_block': 7,
+        'char_capacity':17,
+        'max_num_bits': 8*19
     },
     'M': {
-        'ec_per_block': 16,
-        'char_capacity':26,
-        'max_num_bits': 8*28
+        'ec_per_block': 10,
+        'char_capacity':14,
+        'max_num_bits': 8*16
     },
     'Q': {
-        'ec_per_block': 22,
-        'char_capacity':20,
-        'max_num_bits': 8*22
+        'ec_per_block': 13,
+        'char_capacity':11,
+        'max_num_bits': 8*13
     },
     'H': {
-        'ec_per_block': 28,
-        'char_capacity': 14,
-        'max_num_bits': 8*16
+        'ec_per_block': 17,
+        'char_capacity': 7,
+        'max_num_bits': 8*9
     }
 }
 class Encoder:
@@ -89,7 +91,40 @@ class Encoder:
         # retorna las ec del bloque
         encoded_with_ecs = rs.encode(encoded_message)
 
+        return encoded_with_ecs
 
-    
+    def draw_finder_pattern(self, matrix, row_start, col_start):
+        for i in range(7):
+            for j in range(7):
+                # Determine if the current module should be black (1) or white (0)
+                # Outer border (i=0,6 or j=0,6) or inner block (2 <= i,j <= 4)
+                is_outer = (i == 0 or i == 6 or j == 0 or j == 6)
+                is_inner = (2 <= i <= 4 and 2 <= j <= 4)
 
+                if is_outer or is_inner:
+                    matrix[row_start + i, col_start + j] = 1
+                else:
+                    matrix[row_start + i, col_start + j] = 0
+    def draw_timing_patterns(self, matrix):
+        for i in range(8, 13,2):
+            matrix[i][6] = 1
+            matrix[6][i] = 1
 
+    def format_matrix(self):
+        matrix = np.zeros((21, 21))
+
+        #los cuadrados de las ezquinas
+        self.draw_finder_pattern(matrix, 0, 0)
+        self.draw_finder_pattern(matrix, 0, 14)
+        self.draw_finder_pattern(matrix, 14, 0)
+
+        self.draw_timing_patterns(matrix) #las rayas
+
+        #puntico (dark module)
+        matrix[4+9][8] = 1
+
+        return matrix
+
+    def place_data(self):
+        matrix = self.format_matrix()
+        encoded_message = self.encoded_message
