@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (qr_encoder_decoder)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="~/Desktop/SEMESTRE 5/teoria de codigos/QR_ENCODER_DECODER/.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
