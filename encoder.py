@@ -105,13 +105,19 @@ class Encoder:
                     matrix[row_start + i, col_start + j] = 1
                 else:
                     matrix[row_start + i, col_start + j] = 0
-    def draw_timing_patterns(self, matrix):
-        for i in range(8, 13,2):
-            matrix[i][6] = 1
-            matrix[6][i] = 1
 
+
+
+
+    def draw_timing_patterns(self, matrix):
+        for i in range(8, 13):
+            matrix[i][6] = 1 if i % 2 == 0 else 0
+            matrix[6][i] = 1 if i % 2 == 0 else 0
+
+    def place_data(self, matrix):
+        pass
     def format_matrix(self):
-        matrix = np.zeros((21, 21))
+        matrix = np.zeros([21, 21])
 
         #los cuadrados de las ezquinas
         self.draw_finder_pattern(matrix, 0, 0)
@@ -124,7 +130,4 @@ class Encoder:
         matrix[4+9][8] = 1
 
         return matrix
-
-    def place_data(self):
-        matrix = self.format_matrix()
-        encoded_message = self.encoded_message
+    #pone la información tras poner el formato

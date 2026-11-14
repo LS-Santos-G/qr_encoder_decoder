@@ -1,31 +1,52 @@
+from encoder import Encoder
+
 import numpy as np
 import matplotlib.pyplot as plt
-
-qr_size = (((1-1)*4)+21)
-
-matrix = np.zeros((qr_size, qr_size))
+from encoder import Encoder
 
 
-def draw_finder_pattern(matrixn, row_start, col_start):
-    for i in range(7):
-        for j in range(7):
-            # Determine if the current module should be black (1) or white (0)
-            # Outer border (i=0,6 or j=0,6) or inner block (2 <= i,j <= 4)
-            is_outer = (i == 0 or i == 6 or j == 0 or j == 6)
-            is_inner = (2 <= i <= 4 and 2 <= j <= 4)
+def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
+    #copy to avoid mutating the original array in-place unexpectedly
+    matrix = matrix.copy()
+    size = matrix.shape[0]
+    bit_iter = iter(encoded_bits)
 
-            if is_outer or is_inner:
-                matrixn[row_start + i, col_start + j] = 1
-            else:
-                matrixn[row_start + i, col_start + j] = 0
-def draw_timing_patterns(matrix):
-    for i in range(8, 13,2):
-        matrix[i][6] = 1
-        matrix[6][i] = 1
-draw_finder_pattern(matrix, 0, 0)
-draw_finder_pattern(matrix, 0, 14)
-draw_finder_pattern(matrix, 14, 0)
-draw_timing_patterns(matrix)
-matrix[4+9][8] = 1
-plt.imshow(matrix, cmap='gray_r')
+    # QR code bit placement starts from the bottom-right corner
+    col = size - 1
+    going_up = True
+
+    while col > 0:
+        # Column 6 is reserved for the vertical timing pattern; skip it and shift to column 5
+        if col == 6:
+            col -= 1
+
+        # Determine row traversal direction based on the zigzag pattern
+        row_range = range(size - 1, -1, -1) if going_up else range(0, size)
+
+        for row in row_range:
+            # Process the two columns in the current pair (right column first, then left column)
+            for c in [col, col - 1]:
+                # Only insert a bit if the cell is designated for data (initialized to 0)
+                if matrix[row, c] == 0:
+                    try:
+                        bit = next(bit_iter)
+                        matrix[row, c] = int(bit)
+                    except StopIteration:
+                        # Ran out of bits to place
+                        return matrix
+
+        # Switch vertical direction for the next column pair
+        going_up = not going_up
+        col -= 2
+
+    return matrix
+test = Encoder('apple', 'L')
+test.encode_string_text()
+matrix = test.format_matrix()
+
+
+mat =  place_qr_data_bits(matrix, test.encoded_message)
+for row in mat:
+    print(row)
+plt.imshow(mat, cmap='gray_r')
 plt.show()
