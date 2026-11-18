@@ -24,15 +24,12 @@ def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
         row_range = range(size - 1, -1, -1) if going_up else range(0, size)
 
         for row in row_range:
-            # Process the two columns in the current pair (right column first, then left column)
             for c in [col, col - 1]:
-                # Only insert a bit if the cell is designated for data (initialized to 0)
-                if matrix[row, c] == 0:
+                if matrix[row, c] == -1:  # Aquí cambias el 0 por -1
                     try:
                         bit = next(bit_iter)
                         matrix[row, c] = int(bit)
                     except StopIteration:
-                        # Ran out of bits to place
                         return matrix
 
         # Switch vertical direction for the next column pair
@@ -40,13 +37,23 @@ def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
         col -= 2
 
     return matrix
+
+
 test = Encoder('apple', 'L')
 test.encode_string_text()
 matrix = test.format_matrix()
 
+final_bits = test.ger_ec_codewords()
+mat = place_qr_data_bits(matrix, final_bits)
 
-mat =  place_qr_data_bits(matrix, test.encoded_message)
+print("Bits disponibles:", len(final_bits))
+print("Espacios antes:", np.count_nonzero(matrix == -1))
+
+print("Espacios después:", np.count_nonzero(mat == -1))
+print("Módulo oscuro:", mat[13, 8])
+
 for row in mat:
     print(row)
-plt.imshow(mat, cmap='gray_r')
+
+plt.imshow(mat == 1, cmap="gray_r", vmin=0, vmax=1, interpolation="nearest")
 plt.show()
