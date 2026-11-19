@@ -16,6 +16,7 @@ def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
     going_up = True
 
     while col > 0:
+        
         # Column 6 is reserved for the vertical timing pattern; skip it and shift to column 5
         if col == 6:
             col -= 1
