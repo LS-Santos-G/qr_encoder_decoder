@@ -39,6 +39,7 @@ class Encoder:
         self.message = message
         # correcion seleccionada
         self.error_correction = qr_specs[error_correction]
+        self.error_correction_level = error_correction
         self.encoded_message = ''
 
 
@@ -164,3 +165,184 @@ class Encoder:
 
         return matrix
     # pone la información tras poner el formato
+
+
+    def apply_mask(self, filled_matrix: np.ndarray, original_matrix: np.ndarray, mask_id: int) -> np.ndarray:
+        if mask_id not in range(8):
+            raise ValueError("La máscara debe estar entre 0 y 7.")
+
+        masked_matrix = filled_matrix.copy()
+        size = masked_matrix.shape[0]
+
+        invert: bool = False
+
+        for row in range(size):
+            for col in range(size):
+                if original_matrix[row, col] != -1:
+                    continue
+
+                match mask_id:
+                    case 0:
+                        invert = (row + col) % 2 == 0
+                    case 1:
+                        invert = row % 2 == 0
+                    case 2:
+                        invert = col % 3 == 0
+                    case 3:
+                        invert = (row + col) % 3 == 0
+                    case 4:
+                        invert = (row // 2 + col // 3) % 2 == 0
+                    case 5:
+                        invert = (row * col) % 2 + (row * col) % 3 == 0
+                    case 6:
+                        invert = ((row * col) % 2 + (row * col) % 3) % 2 == 0
+                    case 7:
+                        invert = ((row + col) % 2 + (row * col) % 3) % 2 == 0
+
+                if invert:
+                    masked_matrix[row, col] = 1 - masked_matrix[row, col]
+
+        return masked_matrix
+
+
+    def get_format_bits(self, mask_id: int) -> str:
+        if mask_id not in range(8):
+            raise ValueError("La máscara debe estar entre 0 y 7.")
+
+        level_values = {"L": 1, "M": 0, "Q": 3, "H": 2}
+        level = level_values[self.error_correction_level]
+
+        # Dos bits de nivel y tres bits de máscara.
+        data = (level << 3) | mask_id
+
+        # División polinómica binaria para obtener la protección.
+        remainder = data << 10
+        generator = 0b10100110111
+
+        for position in range(14, 9, -1):
+            if (remainder >> position) & 1:
+                remainder ^= generator << (position - 10)
+
+        format_value = ((data << 10) | remainder) ^ 0b101010000010010
+
+        return f"{format_value:015b}"
+
+
+    def place_format_bits(self, matrix: np.ndarray, mask_id: int) -> np.ndarray:
+        result = matrix.copy()
+        size = result.shape[0]
+        bits = self.get_format_bits(mask_id)[::-1]
+
+        first_copy = (
+                [(row, 8) for row in range(6)]
+                + [(7, 8), (8, 8), (8, 7)]
+                + [(8, col) for col in range(5, -1, -1)]
+        )
+
+        second_copy = (
+                [(8, col) for col in range(size - 1, size - 9, -1)]
+                + [(row, 8) for row in range(size - 7, size)]
+        )
+
+        for index, bit in enumerate(bits):
+            row, col = first_copy[index]
+            result[row, col] = int(bit)
+
+            row, col = second_copy[index]
+            result[row, col] = int(bit)
+
+        return result
+
+
+    def select_best_mask(self, filled_matrix: np.ndarray, original_matrix: np.ndarray) -> tuple[np.ndarray, int]:
+        best_matrix = filled_matrix.copy()
+        best_mask = 0
+        best_penalty = float("inf")
+
+        for mask_id in range(8):
+            candidate = self.apply_mask(
+                filled_matrix, original_matrix, mask_id
+            )
+            candidate = self.place_format_bits(candidate, mask_id)
+            penalty = self.calculate_penalty(candidate)
+
+            if penalty < best_penalty:
+                best_penalty = penalty
+                best_mask = mask_id
+                best_matrix = candidate
+
+        return best_matrix, best_mask
+
+
+    def calculate_penalty(self, matrix: np.ndarray) -> int:
+        penalty1: int = self.penalty_rule_1(matrix)
+        penalty2: int = self.penalty_rule_2(matrix)
+        penalty3: int = self.penalty_rule_3(matrix)
+        penalty4: int = self.penalty_rule_4(matrix)
+
+        return penalty1 + penalty2 + penalty3 + penalty4
+
+
+    def penalty_rule_1(self, matrix: np.ndarray) -> int:
+        penalty = 0
+
+        # Revisa primero las filas y después las columnas.
+        for lines in (matrix, matrix.T):
+            for line in lines:
+                consecutive = 1
+
+                for index in range(1, len(line)):
+                    if line[index] == line[index - 1]:
+                        consecutive += 1
+
+                        if consecutive == 5:
+                            penalty += 3
+                        elif consecutive > 5:
+                            penalty += 1
+                    else:
+                        consecutive = 1
+
+        return penalty
+
+
+    def penalty_rule_2(self, matrix: np.ndarray) -> int:
+        penalty = 0
+        size = matrix.shape[0]
+
+        for row in range(size - 1):
+            for col in range(size - 1):
+                color = matrix[row, col]
+
+                if (
+                        matrix[row, col + 1] == color
+                        and matrix[row + 1, col] == color
+                        and matrix[row + 1, col + 1] == color
+                ):
+                    penalty += 3
+
+        return penalty
+
+
+    def penalty_rule_3(self, matrix: np.ndarray) -> int:
+        penalty = 0
+        patterns = ("10111010000", "00001011101")
+
+        for lines in (matrix, matrix.T):
+            for line in lines:
+                bits = "".join(str(int(value)) for value in line)
+
+                for index in range(len(bits) - 10):
+                    if bits[index:index + 11] in patterns:
+                        penalty += 40
+
+        return penalty
+
+
+    def penalty_rule_4(self, matrix: np.ndarray) -> int:
+        dark_modules = int(np.count_nonzero(matrix == 1))
+        total_modules = matrix.size
+
+        deviation = abs(dark_modules * 100 - total_modules * 50)
+        steps = deviation // (total_modules * 5)
+
+        return steps * 10

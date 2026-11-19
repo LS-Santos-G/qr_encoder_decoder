@@ -1,5 +1,3 @@
-from encoder import Encoder
-
 import numpy as np
 import matplotlib.pyplot as plt
 from encoder import Encoder
@@ -39,21 +37,24 @@ def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
     return matrix
 
 
-test = Encoder('apple', 'L')
+test = Encoder('Sofia', 'L')
 test.encode_string_text()
 matrix = test.format_matrix()
 
+mask_id: int = 0
+
 final_bits = test.ger_ec_codewords()
 mat = place_qr_data_bits(matrix, final_bits)
+mat, mask_id = test.select_best_mask(mat, matrix)
 
-print("Bits disponibles:", len(final_bits))
-print("Espacios antes:", np.count_nonzero(matrix == -1))
+print("Máscara elegida:", mask_id)
+print("Penalización:", test.calculate_penalty(mat))
 
-print("Espacios después:", np.count_nonzero(mat == -1))
-print("Módulo oscuro:", mat[13, 8])
-
-for row in mat:
-    print(row)
-
-plt.imshow(mat == 1, cmap="gray_r", vmin=0, vmax=1, interpolation="nearest")
+plt.imshow(
+    mat == 1,
+    cmap="gray_r",
+    vmin=0,
+    vmax=1,
+    interpolation="nearest"
+)
 plt.show()

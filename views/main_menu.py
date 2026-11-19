@@ -59,9 +59,6 @@ class MainWindow(ctk.CTk):
         pass
 
 
-
-
-
     def _setup_fonts(self) -> None:
         current_dir: str = os.path.dirname(os.path.abspath(__file__))
         root_dir: str = os.path.dirname(current_dir)
