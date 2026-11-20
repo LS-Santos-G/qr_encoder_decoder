@@ -23,11 +23,11 @@ aplicando conceptos de teoría de códigos y mecanismos de corrección de errore
 **Requisitos:** python 3 y las dependencias indicadas en *requirements.txt*
 Luego desde la carpeta del aplicativo, ejecutar:
 
-'''terminal
-python -m pip install -r
-requirements.txt
+```terminal
+python -m pip install -r requirements.txt
+
 python main.py
-'''
+```
 
 ## Resultados Principales
 
