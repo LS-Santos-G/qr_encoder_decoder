@@ -33,7 +33,7 @@ for nombre, dañar in [("módulos al azar", C.flip_exact), ("mancha", C.burst)]:
         plt.plot(DANOS * 100, np.array(tasa) * 100, label=nivel)
     plt.legend(); plt.xlabel("% dañado"); plt.ylabel("% lecturas correctas"); plt.grid(alpha=.3)
 
-m = crear(MENSAJE, "El Grupo 1 es lo máximo!!!")
+m = crear("El grupo 1 es lo máximo!!!", "H")
 fig, ax = plt.subplots(1, 2)
 for a, img, t in zip(ax, [m, C.flip_exact(m, 0.03, rng)], ["original", "dañado 3%"]):
     a.imshow(img, cmap="gray_r"); a.set_title(t); a.axis("off")
