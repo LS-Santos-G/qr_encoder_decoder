@@ -13,7 +13,7 @@ rng = np.random.default_rng(0)
 def crear(mensaje, nivel):
     e = Encoder(mensaje, nivel)
     e.encode_string_text()
-    return e.build_matrix().astype(int)
+    return e.final_matrix_output().astype(int)
 
 
 print("PRUEBA 1: sin daño")
@@ -33,7 +33,7 @@ for nombre, dañar in [("módulos al azar", C.flip_exact), ("mancha", C.burst)]:
         plt.plot(DANOS * 100, np.array(tasa) * 100, label=nivel)
     plt.legend(); plt.xlabel("% dañado"); plt.ylabel("% lecturas correctas"); plt.grid(alpha=.3)
 
-m = crear("El grupo 1 es lo máximo!!!", "H")
+m = crear("Grupo 1", "H")
 fig, ax = plt.subplots(1, 2)
 for a, img, t in zip(ax, [m, C.flip_exact(m, 0.03, rng)], ["original", "dañado 3%"]):
     a.imshow(img, cmap="gray_r"); a.set_title(t); a.axis("off")
