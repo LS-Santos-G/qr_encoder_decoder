@@ -560,7 +560,3 @@ class MainWindow(ctk.CTk):
             self.custom_font = self.make_font("Silkscreen", 64)
         except Exception:
             self.custom_font = self.make_font("Arial", 64)
-
-
-window: MainWindow = MainWindow()
-window.mainloop()
