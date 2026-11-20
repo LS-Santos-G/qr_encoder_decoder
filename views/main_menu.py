@@ -1,7 +1,6 @@
 import customtkinter as ctk
 import utils.view_settings as vs
 import os
-from PIL import Image
 
 
 class MainWindow(ctk.CTk):
@@ -9,9 +8,17 @@ class MainWindow(ctk.CTk):
 
     main_title: ctk.CTkLabel
     custom_font: ctk.CTkFont
-    button_unpressed_image: ctk.CTkImage
-    button_hover_image: ctk.CTkImage
     codify_button: ctk.CTkButton
+    main_menu_frame: ctk.CTkFrame
+    codify_frame: ctk.CTkFrame
+    decodify_button: ctk.CTkButton
+    codify_input_label: ctk.CTkLabel
+    codify_input_entry: ctk.CTkEntry
+    codify_label: ctk.CTkLabel
+    correction_level_input_label: ctk.CTkLabel
+    correction_level_combo_box: ctk.CTkComboBox
+    codify_qr_button: ctk.CTkButton
+    return_from_codify_button: ctk.CTkButton
 
 
     def __init__(self) -> None:
@@ -31,85 +38,141 @@ class MainWindow(ctk.CTk):
 
     def create_widgets(self) -> None:
         self._setup_fonts()
-        self._setup_sprite_sheet()
 
-        self.main_title = ctk.CTkLabel(
+        self.main_menu_frame = ctk.CTkFrame(
             master=self,
+            fg_color="transparent"
+        )
+        self.main_title = ctk.CTkLabel(
+            master=self.main_menu_frame,
             text="Codificador y Decodificador de Qrs",
             font=self.custom_font,
             text_color=vs.FONT_COLOR,
         )
         self.codify_button = ctk.CTkButton(
-            master=self,
+            master=self.main_menu_frame,
             text="Codificar",
-            image=self.button_unpressed_image,
+            font=ctk.CTkFont("Silkscreen", size=64),
+            fg_color="transparent",
+            width=400,
+            height=75,
+            command=self.on_codify_button_click
+        )
+        self.decodify_button = ctk.CTkButton(
+            master=self.main_menu_frame,
+            text="Decodificar",
+            font=ctk.CTkFont("Silkscreen", size=64),
+            fg_color="transparent",
+            width=400,
+            height=75,
+            command=self.on_decodify_button_click
+        )
+        self.codify_frame = ctk.CTkFrame(
+            master=self,
+            fg_color="transparent"
+        )
+        self.codify_input_label = ctk.CTkLabel(
+            master=self.codify_frame,
+            text="Escriba texto a codificar",
+            font=ctk.CTkFont("Silkscreen", size=32),
+            text_color=vs.FONT_COLOR
+        )
+        self.codify_input_entry = ctk.CTkEntry(
+            master=self.codify_frame,
+            font=ctk.CTkFont("Segoe UI", size=32),
+            width=700,
+            height=75,
+        )
+        self.codify_label = ctk.CTkLabel(
+            master=self.codify_frame,
+            text="Codificar",
+            font=ctk.CTkFont("Silkscreen", size=128),
+            text_color=vs.FONT_COLOR,
+            width=400,
+            height=75,
+        )
+        self.correction_level_input_label = ctk.CTkLabel(
+            master=self.codify_frame,
+            text="Seleccione el nivel de correccion",
+            font=ctk.CTkFont("Silkscreen", size=32),
+            text_color=vs.FONT_COLOR,
+            width=400,
+            height=75,
+        )
+        self.correction_level_combo_box = ctk.CTkComboBox(
+            master=self.codify_frame,
+            values=["L", "M", "Q", "H"],
+            width=400,
+            height=75,
+            state="readonly",
+            font=ctk.CTkFont("Silkscreen", size=32),
+            dropdown_font=ctk.CTkFont("Silkscreen", size=32),
+        )
+        self.codify_qr_button = ctk.CTkButton(
+            master=self.codify_frame,
+            text="Codificar Qr",
+            font=ctk.CTkFont("Silkscreen", size=64),
+            fg_color="transparent",
+            width=300,
+            height=75,
+            command=self.on_codify_qr_button_click
+        )
+        self.return_from_codify_button = ctk.CTkButton(
+            master=self.codify_frame,
+            text="Retornar",
+            font=ctk.CTkFont("Silkscreen", size=32),
             fg_color="transparent",
             width=200,
-            height=50,
-            command=self.on_button_click
+            height=75,
+            command=self.on_return_from_codify_button_click
         )
 
 
     def place_widgets(self) -> None:
+        self.main_menu_frame.pack(fill="both", expand=True)
         self.main_title.pack(pady=(40, 20))
-        self.codify_button.pack(pady=(100, 20))
+        self.codify_button.pack(pady=(250, 20))
+        self.decodify_button.pack(pady=(150, 20))
+
+        self.codify_label.pack(pady=(100, 20))
+        self.codify_input_label.pack(pady=(100, 20))
+        self.codify_input_entry.pack()
+        self.correction_level_input_label.pack(pady=(25, 20))
+        self.correction_level_combo_box.pack()
+        self.codify_qr_button.pack(pady=(100, 50))
+        self.return_from_codify_button.pack()
 
 
-    def on_button_click(self) -> None:
+    def on_codify_button_click(self) -> None:
+        self.main_menu_frame.pack_forget()
+        self.codify_frame.pack(fill="both", expand=True)
+
+
+    def on_codify_qr_button_click(self) -> None:
+        pass
+
+
+    def on_return_from_codify_button_click(self) -> None:
+        self.codify_frame.pack_forget()
+        self.main_menu_frame.pack(fill="both", expand=True)
+
+
+    def on_decodify_button_click(self) -> None:
         pass
 
 
     def _setup_fonts(self) -> None:
         current_dir: str = os.path.dirname(os.path.abspath(__file__))
         root_dir: str = os.path.dirname(current_dir)
-        font_path: str = os.path.join(current_dir, "assets", "main_font.ttf")
+        font_path: str = os.path.join(root_dir, "assets", "main_font.ttf")
 
         if not os.path.exists(font_path):
-            print(f"Advertencia: no se encontro la fuente en {font_path}")
+            print(f"Advertencia: no se encontró la fuente en {font_path}")
 
         try:
             self.custom_font = ctk.CTkFont(family="Silkscreen", size=64)
         except Exception:
             self.custom_font = ctk.CTkFont(family="Arial", size=64)
-
-
-    def _setup_sprite_sheet(self) -> None:
-        current_dir: str = os.path.dirname(os.path.abspath(__file__))
-        root_dir: str = os.path.dirname(current_dir)
-        sprite_sheet_path: str = os.path.join(root_dir, "assets", "menu_buttons.png")
-
-        sprite_sheet = Image.open(sprite_sheet_path)
-
-        total_width, height = sprite_sheet.size
-        half_width = int(total_width / 2)
-
-        button_height, button_width = 392, 64
-
-        img_normal_pil: Image.Image = sprite_sheet.crop((0, 0, half_width, height))
-        img_pressed_pil: Image.Image = sprite_sheet.crop((half_width, 0, total_width, height))
-
-        self.button_unpressed_image = ctk.CTkImage(
-            light_image=img_normal_pil,
-            dark_image=img_normal_pil,
-            size=(button_height, button_width)
-        )
-
-        self.button_hover_image = ctk.CTkImage(
-            light_image=img_pressed_pil,
-            dark_image=img_pressed_pil,
-            size=(button_height, button_width)
-        )
-
-
-
-
-
-
-
-
-
-
-
 
 
 window: MainWindow = MainWindow()

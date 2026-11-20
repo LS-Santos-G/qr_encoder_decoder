@@ -37,7 +37,7 @@ def place_qr_data_bits(matrix: np.ndarray, encoded_bits: str) -> np.ndarray:
     return matrix
 
 
-test = Encoder('Sofia', 'L')
+test = Encoder('Caracol', 'L')
 test.encode_string_text()
 matrix = test.format_matrix()
 
