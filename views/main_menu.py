@@ -1,6 +1,9 @@
 import customtkinter as ctk
+import numpy as np
+import matplotlib.pyplot as plt
 import utils.view_settings as vs
 import os
+from controllers.codify_controller import CodifyController
 
 
 class MainWindow(ctk.CTk):
@@ -19,6 +22,7 @@ class MainWindow(ctk.CTk):
     correction_level_combo_box: ctk.CTkComboBox
     codify_qr_button: ctk.CTkButton
     return_from_codify_button: ctk.CTkButton
+    error_codify_label: ctk.CTkLabel
 
 
     def __init__(self) -> None:
@@ -126,6 +130,12 @@ class MainWindow(ctk.CTk):
             height=75,
             command=self.on_return_from_codify_button_click
         )
+        self.error_codify_label = ctk.CTkLabel(
+            master=self.codify_frame,
+            text="",
+            font=ctk.CTkFont("Silkscreen", size=16),
+            text_color=vs.ERROR_COLOR
+        )
 
 
     def place_widgets(self) -> None:
@@ -137,6 +147,7 @@ class MainWindow(ctk.CTk):
         self.codify_label.pack(pady=(100, 20))
         self.codify_input_label.pack(pady=(100, 20))
         self.codify_input_entry.pack()
+        self.error_codify_label.pack(pady=(10, 0))
         self.correction_level_input_label.pack(pady=(25, 20))
         self.correction_level_combo_box.pack()
         self.codify_qr_button.pack(pady=(100, 50))
@@ -149,7 +160,30 @@ class MainWindow(ctk.CTk):
 
 
     def on_codify_qr_button_click(self) -> None:
-        pass
+        message: str = self.codify_input_entry.get()
+        level_of_correction: str = self.correction_level_combo_box.get()
+
+        codify_controller: CodifyController = CodifyController(message, level_of_correction)
+
+        if codify_controller.determine_errors():
+            self.error_codify_label.configure(
+                text="Texto excede los limites de este nivel de corrreccion"
+            )
+            return
+
+        self.error_codify_label.configure(
+            text=""
+        )
+        matrix: np.ndarray = codify_controller.show_qr()
+
+        plt.imshow(
+            matrix == 1,
+            cmap="gray_r",
+            vmin=0,
+            vmax=1,
+            interpolation="nearest"
+        )
+        plt.show()
 
 
     def on_return_from_codify_button_click(self) -> None:

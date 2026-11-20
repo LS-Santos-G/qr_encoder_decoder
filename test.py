@@ -41,8 +41,6 @@ test = Encoder('Caracol', 'L')
 test.encode_string_text()
 matrix = test.format_matrix()
 
-mask_id: int = 0
-
 final_bits = test.ger_ec_codewords()
 mat = place_qr_data_bits(matrix, final_bits)
 mat, mask_id = test.select_best_mask(mat, matrix)
