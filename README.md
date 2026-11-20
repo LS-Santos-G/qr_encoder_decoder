@@ -1,7 +1,9 @@
 # Codificador y Decodificador de Códigos QR
 
 **Asignatura:** Teoría de Códigos
+
 **Institución:** Universidad del Norte
+
 **Integrantes:** Kevin Cardona, Luna Santos, David Alvarez, Maria Camila Tamara
 
 ## Descripción del Proyecto
