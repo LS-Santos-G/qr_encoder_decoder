@@ -35,9 +35,12 @@ El aplicativo es capaz de generar qrs y decodificar qrs con error de canal
 
 ## Herramientas Utilizadas
 
-**Python:** Lenguaje de programacion
-**CustomTkinter:** Principal libreria para la interfaz grafica
+**Python:** Lenguaje de programación
+
+**CustomTkinter:** Principal librería para la interfaz gráfica
+
 **NumPy:** Manejo de matrices
-**Matplotlib:** Graficas de los Qr
+
+**Matplotlib:** Gráficas de los Qr
 
 
